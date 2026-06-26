@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gains Tracker</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.10.3/recharts.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #ffffff;
+      color: #1f2937;
+      padding: 2rem 1rem;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    h1 {
+      margin-bottom: 2rem;
+      font-size: 32px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+    .card {
+      padding: 1.5rem;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      background: #f9f9f9;
+    }
+    .card h2 {
+      font-size: 18px;
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+    input {
+      width: 100%;
+      padding: 0.5rem;
+      font-size: 14px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    button {
+      width: 100%;
+      padding: 0.75rem;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #1d4ed8;
+    }
+    .stat-card {
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+    }
+    .stat-label {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 0.5rem;
+    }
+    .stat-value {
+      font-size: 24px;
+      font-weight: 600;
+      margin: 0;
+    }
+    .stat-current {
+      font-size: 12px;
+      color: #666;
+      margin-top: 0.5rem;
+    }
+    .green {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+    }
+    .green .stat-value {
+      color: #15803d;
+    }
+    .blue {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+    }
+    .blue .stat-value {
+      color: #1e40af;
+    }
+    .purple {
+      background: #f5f3ff;
+      border: 1px solid #ddd6fe;
+    }
+    .purple .stat-value {
+      color: #6d28d9;
+    }
+    .charts {
+      padding: 1.5rem;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      margin-bottom: 2rem;
+    }
+    .charts h2 {
+      font-size: 18px;
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+    .chart-container {
+      width: 100%;
+      height: 300px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      margin-top: 1rem;
+    }
+    th {
+      text-align: left;
+      padding: 0.75rem;
+      font-weight: 600;
+      border-bottom: 2px solid #e5e5e5;
+    }
+    td {
+      padding: 0.75rem;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .history {
+      padding: 1.5rem;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+    }
+    .history h2 {
+      font-size: 18px;
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+    @media (max-width: 768px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Gains Tracker</h1>
+    
+    <div class="grid">
+      <!-- Form -->
+      <div class="card">
+        <h2>Log Today</h2>
+        <form id="logForm">
+          <div class="form-group">
+            <label>Weight (lbs)</label>
+            <input type="number" id="weight" step="0.1" placeholder="175.5" required>
+          </div>
+          <div class="form-group">
+            <label>MMR</label>
+            <input type="number" id="mmr" placeholder="1250" required>
+          </div>
+          <div class="form-group">
+            <label>Rank</label>
+            <input type="text" id="rank" placeholder="Diamond 3" required>
+          </div>
+          <button type="submit">Log Entry</button>
+        </form>
+      </div>
+
+      <!-- Stats -->
+      <div>
+        <h2 style="font-size: 18px; margin-bottom: 1rem; font-weight: 600;">Your Gains</h2>
+        <div class="stat-card green">
+          <div class="stat-label">Weight Gain</div>
+          <p class="stat-value" id="weightGain">+0 lbs</p>
+          <div class="stat-current" id="weightCurrent"></div>
+        </div>
+        <div class="stat-card blue">
+          <div class="stat-label">MMR Gain</div>
+          <p class="stat-value" id="mmrGain">+0</p>
+          <div class="stat-current" id="mmrCurrent"></div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-label">Entries Logged</div>
+          <p class="stat-value" id="entryCount">0</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div id="chartsContainer" style="display: none;">
+      <div class="charts">
+        <h2>Trends</h2>
+        <canvas id="chartCanvas" width="400" height="200"></canvas>
+      </div>
+    </div>
+
+    <!-- History -->
+    <div class="history" id="historyContainer" style="display: none;">
+      <h2>Log History</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Weight</th>
+            <th>MMR</th>
+            <th>Rank</th>
+          </tr>
+        </thead>
+        <tbody id="historyBody">
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('logForm');
+    const weightInput = document.getElementById('weight');
+    const mmrInput = document.getElementById('mmr');
+    const rankInput = document.getElementById('rank');
+
+    let entries = [];
+
+    function loadEntries() {
+      const stored = localStorage.getItem('gains-tracker-entries');
+      if (stored) {
+        entries = JSON.parse(stored);
+      }
+      updateUI();
+    }
+
+    function saveEntries() {
+      localStorage.setItem('gains-tracker-entries', JSON.stringify(entries));
+      updateUI();
+    }
+
+    function updateUI() {
+      // Update stats
+      if (entries.length > 0) {
+        const latest = entries[entries.length - 1];
+        const first = entries[0];
+        
+        const weightGain = (latest.weight - first.weight).toFixed(1);
+        const mmrGain = latest.mmr - first.mmr;
+        
+        document.getElementById('weightGain').textContent = (weightGain >= 0 ? '+' : '') + weightGain + ' lbs';
+        document.getElementById('mmrGain').textContent = (mmrGain >= 0 ? '+' : '') + mmrGain;
+        document.getElementById('weightCurrent').textContent = 'Current: ' + latest.weight + ' lbs';
+        document.getElementById('mmrCurrent').textContent = 'Current: ' + latest.mmr + ' MMR';
+        document.getElementById('entryCount').textContent = entries.length;
+
+        // Show charts and history
+        document.getElementById('chartsContainer').style.display = 'block';
+        document.getElementById('historyContainer').style.display = 'block';
+
+        // Update history table
+        const tbody = document.getElementById('historyBody');
+        tbody.innerHTML = '';
+        [...entries].reverse().forEach(entry => {
+          const row = tbody.insertRow();
+          row.innerHTML = `
+            <td>${entry.date}</td>
+            <td>${entry.weight} lbs</td>
+            <td>${entry.mmr}</td>
+            <td>${entry.rank}</td>
+          `;
+        });
+
+        // Draw simple chart
+        drawChart();
+      } else {
+        document.getElementById('chartsContainer').style.display = 'none';
+        document.getElementById('historyContainer').style.display = 'none';
+      }
+    }
+
+    function drawChart() {
+      const canvas = document.getElementById('chartCanvas');
+      if (!canvas) return;
+      
+      const ctx = canvas.getContext('2d');
+      const width = canvas.width;
+      const height = canvas.height;
+
+      // Clear canvas
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, width, height);
+
+      // Draw axes
+      ctx.strokeStyle = '#e5e5e5';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(40, 20);
+      ctx.lineTo(40, height - 40);
+      ctx.lineTo(width - 20, height - 40);
+      ctx.stroke();
+
+      // Draw data
+      if (entries.length > 1) {
+        const minWeight = Math.min(...entries.map(e => e.weight));
+        const maxWeight = Math.max(...entries.map(e => e.weight));
+        const minMMR = Math.min(...entries.map(e => e.mmr));
+        const maxMMR = Math.max(...entries.map(e => e.mmr));
+
+        const weightRange = maxWeight - minWeight || 1;
+        const mmrRange = maxMMR - minMMR || 1;
+
+        const plotWidth = width - 60;
+        const plotHeight = height - 60;
+
+        // Draw weight line
+        ctx.strokeStyle = '#15803d';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        entries.forEach((entry, i) => {
+          const x = 40 + (i / (entries.length - 1)) * plotWidth;
+          const y = height - 40 - ((entry.weight - minWeight) / weightRange) * plotHeight;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+
+        // Draw MMR line
+        ctx.strokeStyle = '#1e40af';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        entries.forEach((entry, i) => {
+          const x = 40 + (i / (entries.length - 1)) * plotWidth;
+          const y = height - 40 - ((entry.mmr - minMMR) / mmrRange) * plotHeight;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+
+        // Draw legend
+        ctx.fillStyle = '#15803d';
+        ctx.fillRect(width - 200, 10, 12, 12);
+        ctx.fillStyle = '#1f2937';
+        ctx.font = '12px sans-serif';
+        ctx.fillText('Weight', width - 180, 20);
+
+        ctx.fillStyle = '#1e40af';
+        ctx.fillRect(width - 200, 30, 12, 12);
+        ctx.fillStyle = '#1f2937';
+        ctx.fillText('MMR', width - 180, 40);
+      }
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      const newEntry = {
+        date: new Date().toISOString().split('T')[0],
+        weight: parseFloat(weightInput.value),
+        mmr: parseInt(mmrInput.value),
+        rank: rankInput.value
+      };
+
+      const existingIndex = entries.findIndex(e => e.date === newEntry.date);
+      if (existingIndex !== -1) {
+        entries[existingIndex] = newEntry;
+      } else {
+        entries.push(newEntry);
+      }
+
+      entries.sort((a, b) => new Date(a.date) - new Date(b.date));
+      saveEntries();
+
+      weightInput.value = '';
+      mmrInput.value = '';
+      rankInput.value = '';
+    });
+
+    // Load on start
+    loadEntries();
+  </script>
+</body>
+</html>
